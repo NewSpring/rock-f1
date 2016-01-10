@@ -4,25 +4,18 @@
   </a>
 </p>
 
-## Who was Apollos?
+## What is F1?
 
-* <a href="https://www.biblegateway.com/passage/?search=Acts%2018:24-28&version=NIV">Acts 18:24-28</a>
-* <a href="https://www.biblegateway.com/passage/?search=Acts+19:1&version=NIV">Acts 19:1</a>
-* <a href="https://www.biblegateway.com/passage/?search=1+Corinthians+1:12-13&version=NIV">1 Corinthians 1:12-13</a>
-* <a href="https://www.biblegateway.com/passage/?search=1%20Corinthians%203:6&version=NIV">1 Corinthians 3:6</a>
-* <a href="https://www.biblegateway.com/passage/?search=Titus%203:13&version=NIV">Titus 3:13</a>
+* <a href="http://www.fellowshipone.com/">Marketing Website</a>
 
-
-# NewSpring:rock-apollos
-The definitive Apollos library for Rock.
+# NewSpring:rock-f1
+The definitive F1 migration library for Rock.
 
 ## Developer Environment
 
 This project depends on a website (RockWeb) to run and test.  You will need to download this repo next to a version of [Rock](https://github.com/NewSpring/Rock).  The solution for Rock includes a link to this plugin and an integrated build command will copy the compiled project into RockWeb\bin as well as any blocks into RockWeb\Plugins.
 
 # Dependencies:
-
-BCrypt.Net
 
 DotLiquid
 
