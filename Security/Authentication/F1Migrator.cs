@@ -215,7 +215,7 @@ namespace cc.newspring.F1.Security.Authentication
             var restRequest = new RestRequest( resourceUrl, Method.POST );
             restRequest.AddHeader( "Authorization", auth );
 
-            var payload = HttpUtility.UrlEncode(Base64Encode( "bjwiley2@gmail.com" + " " + password ));
+            var payload = HttpUtility.UrlEncode(Base64Encode( username + " " + password ));
             restRequest.AddQueryParameter("ec", payload );
             var restResponse = restClient.Execute( restRequest );
             return restResponse.StatusCode == HttpStatusCode.OK;
