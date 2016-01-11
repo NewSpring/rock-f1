@@ -16,20 +16,25 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Security.Cryptography;
-using System.Text;
+using System.Net;
 using RestSharp;
+using RestSharp.Authenticators;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.Authentication;
+using Rock.Web.Cache;
 
 namespace cc.newspring.F1.Security.Authentication
 {
     [Description( "F1 Authentication and Migration Provider" )]
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "F1 Migrator" )]
-    [TextField( "F1 Cred", "Something that makes you think F1 will talk to you", true )] // TODO: FIX THIS!
+    [TextField( "Base Url", "The base url to use to check the credentials against", true, "https://newspring.fellowshiponeapi.com/" )]
+    [TextField( "Resource Url", "The resource url to use to check the credentials against", true, "v1/WeblinkUser/AccessToken" )]
+    [TextField( "ConsumerKey", "The rest url to use to check the credentials against", true )]
+    [TextField( "ConsumerSecret", "The rest url to use to check the credentials against", true )]
     public class F1Migrator : AuthenticationComponent
     {
         /// <summary>
@@ -70,7 +75,17 @@ namespace cc.newspring.F1.Security.Authentication
         /// <returns></returns>
         public override bool Authenticate( UserLogin user, string password )
         {
-            throw new NotImplementedException();
+            var passwordIsCorrect = CheckF1Password( user.UserName, password );
+
+            if ( passwordIsCorrect )
+            {
+                // TODO: Does this work?
+                user.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
+                var databaseAuth = new Database();
+                databaseAuth.SetPassword( user, password );
+            }
+
+            return passwordIsCorrect;
         }
 
         /// <summary>
@@ -166,5 +181,43 @@ namespace cc.newspring.F1.Security.Authentication
         {
             throw new NotImplementedException();
         }
-    }
+
+        /// <summary>
+        /// Checks the f1 password using the F1 API.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
+        private bool CheckF1Password( string username, string password )
+        {
+            var baseUrl = GetAttributeValue( "BaseUrl" );
+            var resourceUrl = GetAttributeValue( "ResourceUrl" );
+            var consumerKey = GetAttributeValue( "ConsumerKey" );
+            var consumerSecret = GetAttributeValue( "ConsumerSecret" );
+
+            var restClient = new RestClient( baseUrl )
+            {
+                Authenticator = OAuth1Authenticator.ForRequestToken( consumerKey, consumerSecret )
+            };
+            
+            // Get information about the person who logged in
+            var restRequest = new RestRequest( resourceUrl, Method.POST );
+            var body = Base64Encode( username + " " + password );
+            restRequest.RequestFormat = DataFormat.Json;
+            restRequest.AddBody( body );
+            var restResponse = restClient.Execute( restRequest );
+            return restResponse.StatusCode == HttpStatusCode.OK;
+        }
+
+        /// <summary>
+        /// Base64s the plainText.
+        /// </summary>
+        /// <param name="plainText">The plain text.</param>
+        /// <returns></returns>
+        private static string Base64Encode( string plainText )
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes( plainText );
+            return System.Convert.ToBase64String( plainTextBytes );
+        }
+	}
 }
