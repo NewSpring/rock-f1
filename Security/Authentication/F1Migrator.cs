@@ -16,14 +16,15 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Net;
+using System.Web;
 using RestSharp;
-using RestSharp.Authenticators;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Security.Authentication;
 using Rock.Web.Cache;
 
 namespace cc.newspring.F1.Security.Authentication
@@ -79,10 +80,15 @@ namespace cc.newspring.F1.Security.Authentication
 
             if ( passwordIsCorrect )
             {
-                // TODO: Does this work?
-                user.EntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
-                var databaseAuth = new Database();
-                databaseAuth.SetPassword( user, password );
+                using ( var rockContext = new RockContext() )
+                {
+                    var userLoginService = new UserLoginService( rockContext );
+                    var userFromService = userLoginService.Get( user.Id );
+                    var databaseGuid = Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid();
+                    userFromService.EntityTypeId = EntityTypeCache.Read( databaseGuid ).Id;
+                    userLoginService.SetPassword( userFromService, password );
+                    rockContext.SaveChanges();
+                }
             }
 
             return passwordIsCorrect;
@@ -194,17 +200,23 @@ namespace cc.newspring.F1.Security.Authentication
             var resourceUrl = GetAttributeValue( "ResourceUrl" );
             var consumerKey = GetAttributeValue( "ConsumerKey" );
             var consumerSecret = GetAttributeValue( "ConsumerSecret" );
+            var epoch = new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc );
+            var timestamp = (int)DateTime.Now.ToUniversalTime().Subtract( epoch ).TotalSeconds;
+            var nonce = GetRandomString(6);
 
-            var restClient = new RestClient( baseUrl )
-            {
-                Authenticator = OAuth1Authenticator.ForRequestToken( consumerKey, consumerSecret )
-            };
-            
-            // Get information about the person who logged in
+            var auth = string.Format(
+                "OAuth oauth_consumer_key=\"{0}\",oauth_signature_method=\"PLAINTEXT\",oauth_timestamp=\"{1}\",oauth_nonce=\"{2}\",oauth_version=\"1.0A\",oauth_signature=\"{3}%2526\"", 
+                consumerKey,
+                timestamp,
+                nonce,
+                consumerSecret);
+                                                                                                                                                                         
+            var restClient = new RestClient( baseUrl );
             var restRequest = new RestRequest( resourceUrl, Method.POST );
-            var body = Base64Encode( username + " " + password );
-            restRequest.RequestFormat = DataFormat.Json;
-            restRequest.AddBody( body );
+            restRequest.AddHeader( "Authorization", auth );
+
+            var payload = HttpUtility.UrlEncode(Base64Encode( "bjwiley2@gmail.com" + " " + password ));
+            restRequest.AddQueryParameter("ec", payload );
             var restResponse = restClient.Execute( restRequest );
             return restResponse.StatusCode == HttpStatusCode.OK;
         }
@@ -218,6 +230,18 @@ namespace cc.newspring.F1.Security.Authentication
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes( plainText );
             return System.Convert.ToBase64String( plainTextBytes );
+        }
+
+        /// <summary>
+        /// Gets the random string.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        private static string GetRandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            return new string( Enumerable.Repeat( chars, length ).Select( s => s[random.Next( s.Length )] ).ToArray() );
         }
 	}
 }
