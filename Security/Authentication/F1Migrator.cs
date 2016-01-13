@@ -1,19 +1,4 @@
-﻿/*   * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-     * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-     * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
-     * documentation and/or other materials provided with the distribution.
-     * Neither the name of BCrypt.Net nor the names of its contributors may be used to endorse or promote products derived from this software without
-     * specific prior written permission.
-     *
-     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-     * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-     * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-     * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-     * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-     * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-     */
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -125,7 +110,7 @@ namespace cc.newspring.F1.Security.Authentication
         /// <param name="password">The password.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        /// 
+        ///
         public override void SetPassword( UserLogin user, string password )
         {
             throw new NotImplementedException();
@@ -205,12 +190,12 @@ namespace cc.newspring.F1.Security.Authentication
             var nonce = GetRandomString(6);
 
             var auth = string.Format(
-                "OAuth oauth_consumer_key=\"{0}\",oauth_signature_method=\"PLAINTEXT\",oauth_timestamp=\"{1}\",oauth_nonce=\"{2}\",oauth_version=\"1.0A\",oauth_signature=\"{3}%2526\"", 
+                "OAuth oauth_consumer_key=\"{0}\",oauth_signature_method=\"PLAINTEXT\",oauth_timestamp=\"{1}\",oauth_nonce=\"{2}\",oauth_version=\"1.0A\",oauth_signature=\"{3}%2526\"",
                 consumerKey,
                 timestamp,
                 nonce,
                 consumerSecret);
-                                                                                                                                                                         
+
             var restClient = new RestClient( baseUrl );
             var restRequest = new RestRequest( resourceUrl, Method.POST );
             restRequest.AddHeader( "Authorization", auth );
