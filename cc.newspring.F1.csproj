@@ -54,9 +54,6 @@
     <Reference Include="Owin">
       <HintPath>..\Rock\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
-	<Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-	 <HintPath>..\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
-	</Reference>
     <ProjectReference Include="..\Rock\DotLiquid\DotLiquid.csproj">
       <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
       <Name>DotLiquid</Name>
@@ -69,6 +66,10 @@
       <Project>{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}</Project>
       <Name>Rock.Rest</Name>
     </ProjectReference>
+    <Reference Include="RestSharp, Version=105.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Rock\packages\RestSharp.105.0.1\lib\net4\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -92,6 +93,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Gateway.cs" />
     <Compile Include="Security\Authentication\F1Migrator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
