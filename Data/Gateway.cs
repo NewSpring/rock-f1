@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using RestSharp;
+using Newtonsoft.Json;
 
 namespace cc.newspring.F1
 {
@@ -32,8 +33,8 @@ namespace cc.newspring.F1
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "F1 Gateway" )]
 
-    [TextField( "Vendor Key", "The API vendor key" )]
-    [TextField("Base Url", "The base url to use to check the credentials against", true, "https://newspring.fellowshiponeapi.com/")]
+    [TextField( "Vendor Key", "The API vendor key (typically this is a guid)" )]
+    [TextField("Base Url", "The base url of the Fellowship One API", true, "https://newspring.fellowshiponeapi.com/")]
     public class Gateway : GatewayComponent
     {
         public override FinancialScheduledTransaction AddScheduledPayment(FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage)
@@ -67,11 +68,10 @@ namespace cc.newspring.F1
         {
             errorMessage = null;
 
-            var baseUrl = GetAttributeValue("BaseUrl");
-            var key = GetAttributeValue("VendorKey");
-            var auth = string.Format("BASIC {0}", Base64Encode(key));
+            var baseUrl = GetAttributeValue(financialGateway, "BaseUrl");
+            var key = GetAttributeValue(financialGateway, "VendorKey");
+            var auth = string.Format("Basic {0}", Base64Encode(key));
             var recordsPerPage = 100;
-            endDate = endDate.AddDays(1);
 
             var resourceUrl = string.Format("giving/v1/contributionreceipts/search?recordsPerPage={0}&startReceivedDate={1}&endReceivedDate={2}", 
                 recordsPerPage, GetQueryParam(startDate), GetQueryParam(endDate));
@@ -82,11 +82,7 @@ namespace cc.newspring.F1
             restRequest.AddHeader("Content-Type", "application/json");
 
             var restResponse = restClient.Execute(restRequest);
-            DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
-            object objResponse = jsonSerializer.ReadObject(response.GetResponseStream());
-            Response jsonResponse
-            = objResponse as Response;
-            return jsonResponse;
+            dynamic stuff = JsonConvert.DeserializeObject(restResponse.Content);
 
             return new List<Payment>();
         }
@@ -136,5 +132,110 @@ namespace cc.newspring.F1
         {
             return dateTime.ToString("yyyy-MM-dd");
         }
+    }
+
+    public class ApiResult
+    {
+        public ApiResultData results { get; set; }
+    }
+
+    public class ApiResultData
+    {
+        public string @count { get; set; }
+        public string @pageNumber { get; set; }
+        public string @totalRecords { get; set; }
+        public string @additionalPages { get; set; }
+        public List<ContributionReceipt> contributionReceipt { get; set; }
+    }
+
+    public class ContributionReceipt
+    {
+        public string @id { get; set; }
+        public string amount { get; set; }
+        public DateTime receivedDate { get; set; }
+
+        /*
+        {
+        "@id": "376689992",
+        "@uri": "https://newspring.fellowshiponeapi.com/giving/v1/contributionreceipts/376689992",
+        "@oldID": "",
+        "accountReference": "Online",
+        "amount": "51.0000",
+        "fund": {
+          "@id": "135854",
+          "@uri": "https://newspring.fellowshiponeapi.com/giving/v1/funds/135854",
+          "name": "General (Tithe) Fund",
+          "fundTypeID": "1"
+        },
+        "subFund": {
+          "@id": "111977",
+          "@uri": "https://newspring.fellowshiponeapi.com/giving/v1/subfunds/111977",
+          "name": "Columbia Campus"
+        },
+        "pledgeDrive": {
+          "@id": "",
+          "@uri": "",
+          "name": null
+        },
+        "household": {
+          "@id": "23115390",
+          "@uri": "https://newspring.fellowshiponeapi.com/v1/households/23115390"
+        },
+        "person": {
+          "@id": "37497441",
+          "@uri": "https://newspring.fellowshiponeapi.com/v1/people/37497441"
+        },
+        "account": {
+          "@id": "",
+          "@uri": ""
+        },
+        "referenceImage": {
+          "@id": "",
+          "@uri": ""
+        },
+        "batch": {
+          "@id": "",
+          "@uri": "",
+          "name": null
+        },
+        "activityInstance": {
+          "@id": "",
+          "@uri": ""
+        },
+        "contributionType": {
+          "@id": "5",
+          "@uri": "https://newspring.fellowshiponeapi.com/giving/v1/contributiontypes/5",
+          "name": "ACH"
+        },
+        "contributionSubType": {
+          "@id": "",
+          "@uri": "",
+          "name": null
+        },
+        "receivedDate": "2016-05-05T06:27:35",
+        "transmitDate": null,
+        "returnDate": null,
+        "retransmitDate": null,
+        "glPostDate": null,
+        "isSplit": "false",
+        "addressVerification": "false",
+        "memo": "Reference Number: 683CW4VFLA1",
+        "statedValue": null,
+        "trueValue": null,
+        "thank": "false",
+        "thankedDate": null,
+        "isMatched": "1",
+        "createdDate": "2016-05-05T05:27:35",
+        "createdByPerson": {
+          "@id": "",
+          "@uri": ""
+        },
+        "lastUpdatedDate": "2016-05-05T05:27:35",
+        "lastUpdatedByPerson": {
+          "@id": "",
+          "@uri": ""
+        }
+      },
+         */
     }
 }
