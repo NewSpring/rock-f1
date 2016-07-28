@@ -57,8 +57,8 @@
       <Project>{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}</Project>
       <Name>Rock.Rest</Name>
     </ProjectReference>
-    <Reference Include="RestSharp">
-      <HintPath>..\rock\packages\RestSharp.105.2.3\lib\net451\RestSharp.dll</HintPath>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\rock\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
